@@ -1,12 +1,11 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { FromToModel } from '../models/fromToModel';
-import { getChartData, loadChartData } from '../state/actions/chart.actions';
+import { loadChartData } from '../state/actions/chart.actions';
 import { selectChart } from '../state/reducers/chart.reducer';
 import { ChartService } from './chart.service';
-import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 declare var $: any;
 declare const google;
@@ -23,15 +22,27 @@ export class ChartComponent implements OnInit {
     google.charts.load('visualization', '1', { 'packages': ['line', 'corechart'] });
     google.charts.setOnLoadCallback(function () { t.googleLoaded = true; });
 
-    this.responsive.observe(Breakpoints.HandsetPortrait)
-      .subscribe(result => {
-        this.isPhonePortrait = false; 
 
-        if (result.matches) {
+    this.responsive.observe([
+      Breakpoints.HandsetPortrait,
+      Breakpoints.HandsetLandscape])
+      .subscribe(result => {
+
+        const breakpoints = result.breakpoints;
+
+        this.isPhonePortrait = false;
+        this.isPhoneLandscape = false;
+        this.isLandscape = true;
+
+        if (breakpoints[Breakpoints.HandsetPortrait]) {
           this.isPhonePortrait = true;
+          this.isLandscape = false;
+        }
+        else if (breakpoints[Breakpoints.HandsetLandscape]) {
+          this.isPhoneLandscape = true;
         }
 
-  });
+      });
   }
 
   private ngUnsubscribe: Subject<any> = new Subject();
@@ -41,12 +52,16 @@ export class ChartComponent implements OnInit {
   googleLoaded: boolean = false;
   fromToModel: FromToModel = new FromToModel();
   noData: boolean = true;
-  isPhonePortrait:boolean = false;
-  dateFormat:string = 'dd/mm/yy'
+  isPhonePortrait: boolean = false;
+  isPhoneLandscape: boolean = false;
+  isLandscape: boolean = false;
+  dateFormat: string = 'dd/mm/yy';
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {
-    this.drawChart();
+    setTimeout(() => {
+      this.drawChart();
+    }, 10);
   }
 
   ngOnInit(): void {
@@ -75,6 +90,9 @@ export class ChartComponent implements OnInit {
 
 
   drawChart() {
+    let chartArea = { top: 70, height: '60%' }
+    if(this.isPhoneLandscape)
+      chartArea = { top:50, height:'40%'};
     if (!this.googleLoaded) {
       setTimeout(() => {
         this.drawChart();
@@ -84,20 +102,17 @@ export class ChartComponent implements OnInit {
       var data = google.visualization.arrayToDataTable(this.mappedToArray);
 
       var date_formatter = new google.visualization.DateFormat({
-        pattern: "MMM dd, yyyy"
+        pattern: "EEE, MMM dd, yyyy"
       });
       date_formatter.format(data, 0);
 
       var classicOptions = {
         legend: { position: 'bottom', alignment: 'center' },
-        chartArea: {
-          top: 50,
-          height: '40%' 
-        },
+        chartArea: chartArea,
         title: 'Cumulative job views vs.prediction',
         pointSize: 10,
         focusTarget: 'category',
-        colors: ['#5E5E5E', "#8FBC8F", '#247BA0'],
+        colors: ['lightgray', "#97C000", '#3BB0C9'],
         // Gives each series an axis that matches the vAxes number below.
         series: {
           0: { targetAxisIndex: 1, type: 'bars' },
@@ -114,7 +129,7 @@ export class ChartComponent implements OnInit {
             count: 0,
             color: 'transparent'
           },
-          format: 'MMM dd, yyyy',
+          format: 'MMM d',
           ticks: this.dates,
           textStyle: {
             color: 'gray',

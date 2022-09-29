@@ -1,4 +1,4 @@
-<div class="w100 h100 wrap-div" [ngClass]="{'phone-portrait':isPhonePortrait,'desktop':!isPhonePortrait}">
+<div class="w100 h100 wrap-div" [ngClass]="{'phone-portrait':isPhonePortrait,'desktop':isLandscape}">
     <div class="title-item">
         <p-calendar class="fl" placeholder="From" [(ngModel)]="fromToModel.from" dateFormat="{{dateFormat}}" [maxDate]="fromToModel.to" [showIcon]="true"></p-calendar>
     </div>
@@ -8,7 +8,7 @@
     <div class="title-item btn-div">
         <p-button class="fl" label="Get data" (click)="getData()"></p-button>
     </div>
-      <div *ngIf="!noData else noDataText" id="chart_div" style="width: 100%; height: 500px; max-height:80%"></div>
+      <div *ngIf="!noData else noDataText" id="chart_div" class="chart-div"></div>
       <ng-template #noDataText>
         <h1 class="no-data">No Data</h1>
       </ng-template>
