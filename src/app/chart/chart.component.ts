@@ -90,6 +90,10 @@ export class ChartComponent implements OnInit {
 
       var classicOptions = {
         legend: { position: 'bottom', alignment: 'center' },
+        chartArea: {
+          top: 50,
+          height: '40%' 
+        },
         title: 'Cumulative job views vs.prediction',
         pointSize: 10,
         focusTarget: 'category',
